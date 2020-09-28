@@ -1,14 +1,15 @@
-@metadata_processor
+@metadata_reactor
 def add_restic_rules(metadata):
-    if node.has_bundle('restic'):
-        backup_folders = ['/root', ]
+    if not node.has_bundle("restic"):
+        raise DoNotRunAgain
 
-        for username, user_attrs in metadata['users'].items():
-            backup_folders += ["/home/{}".format(username), ]
+    add_folders = ['/root', ]
 
-        if 'restic' not in metadata:
-            metadata['restic'] = {}
+    for username, user_attrs in metadata.get('users').items():
+        add_folders += ["/home/{}".format(username), ]
 
-        metadata['restic']['backup_folders'] = metadata['restic'].get('backup_folders', []) + backup_folders
-
-    return metadata, DONE
+    return {
+        'restic': {
+            'backup_folders':add_folders
+        }
+    }
