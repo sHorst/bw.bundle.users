@@ -43,18 +43,18 @@ for username, user_attrs in node.metadata['users'].items():
         if 'add_groups' in user_attrs:
             add_groups += user_attrs['add_groups']
 
-        directories["/home/{}".format(username)] = {
+        home = user_attrs.get('home', "/home/{}".format(username))
+        password_hash = user_attrs.get('password_hash', no_password)
+        shell = user_attrs.get('shell', default_shell)
+
+        directories[home] = {
             'owner': username,
             'group': username,
             'mode': "0751",
         }
 
-        home = user_attrs.get('home', "/home/{}".format(username))
-        password_hash = user_attrs.get('password_hash', no_password)
-        shell = user_attrs.get('shell', default_shell)
-
         users[username] = {
-            'home': user_attrs.get('home', "/home/{}".format(username)),
+            'home': home,
             'password_hash': user_attrs.get('password_hash', no_password),
             'shell': user_attrs.get('shell', default_shell),
             'groups': add_groups,
