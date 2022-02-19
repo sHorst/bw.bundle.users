@@ -44,8 +44,15 @@ for username, user_attrs in node.metadata['users'].items():
             add_groups += user_attrs['add_groups']
 
         home = user_attrs.get('home', "/home/{}".format(username))
-        password_hash = user_attrs.get('password_hash', no_password)
-        shell = user_attrs.get('shell', default_shell)
+
+        # Don't reset user password. Run if reset_password = False
+        if not user_attrs.get('reset_password', True) and \
+                bytes.decode(
+                    node.run(f"passwd --status {username} | cut -d ' ' -f2", may_fail=True).stdout
+                ).strip() == 'P':
+            password_hash = bytes.decode(node.run(f"cat /etc/shadow | grep {username} | cut -d ':' -f2").stdout).strip()
+        else:
+            password_hash = user_attrs.get('password_hash', no_password)
 
         directories[home] = {
             'owner': username,
@@ -55,7 +62,7 @@ for username, user_attrs in node.metadata['users'].items():
 
         users[username] = {
             'home': home,
-            'password_hash': user_attrs.get('password_hash', no_password),
+            'password_hash': password_hash,
             'shell': user_attrs.get('shell', default_shell),
             'groups': add_groups,
             'needs': ['pkg_apt:zsh'],
