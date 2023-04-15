@@ -6,8 +6,7 @@ def add_restic_rules(metadata):
     if not node.has_bundle("restic"):
         raise DoNotRunAgain
 
-    add_folders = set()
-    add_folders.add('/root')
+    add_folders = {'/root', }
 
     for username, user_attrs in metadata.get('users').items():
         if user_attrs.get('delete', False) or user_attrs.get('exclude_backup', False):
